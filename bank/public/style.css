@@ -1,0 +1,76 @@
+/* Plain, fixed layout. The clickjacking overlay (F-04) relies on the
+   confirm button staying at a predictable position, so avoid changing
+   .confirm / .confirm-button without re-aligning the attacker page. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f4f6f8;
+  color: #1c2430;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  padding: 0 24px;
+  background: #12355b;
+  color: #fff;
+}
+.topbar a { color: #fff; text-decoration: none; }
+.topbar nav { margin-left: auto; display: flex; gap: 16px; }
+.brand { font-weight: 700; font-size: 18px; }
+.instance {
+  font: 12px/1 ui-monospace, monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+main { max-width: 720px; margin: 24px auto; padding: 0 16px; }
+
+.card {
+  background: #fff;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+
+label { display: block; margin: 8px 0; }
+input, textarea { display: block; width: 100%; padding: 8px; font: inherit; border: 1px solid #c4ccd6; border-radius: 4px; }
+
+button {
+  padding: 8px 16px;
+  font: inherit;
+  color: #fff;
+  background: #1f6feb;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eef1f4; }
+
+.balance { font-size: 20px; }
+.notice { padding: 8px 12px; background: #e6f4ea; border-radius: 4px; }
+.error { padding: 8px 12px; background: #fde8e8; border-radius: 4px; }
+.hint { color: #5b6675; font-size: 14px; }
+
+.post { padding: 8px 0; border-bottom: 1px solid #eef1f4; }
+.post header { font-size: 12px; color: #5b6675; }
+
+/* F-04 clickjacking target: fixed geometry. */
+.confirm { position: relative; height: 320px; }
+.confirm-button {
+  position: absolute;
+  top: 180px;
+  left: 0;
+  width: 240px;
+  height: 56px;
+  font-size: 18px;
+}

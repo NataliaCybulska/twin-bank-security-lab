@@ -1,0 +1,51 @@
+# Deliberately vulnerable lab. Every port is bound to 127.0.0.1 only:
+# nothing here is reachable from your network.
+name: twin-bank-security-lab
+
+x-hardening: &hardening
+  init: true                            # PID 1 forwards signals (clean Ctrl+C / stop)
+  read_only: true                       # container filesystem is read-only...
+  tmpfs: [/tmp]                         # ...except /tmp (tsx keeps its cache there)
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  # Resource limits: a runaway process can't take down the host.
+  mem_limit: 256m                       # killed (OOM) above 256 MB instead of eating host RAM
+  cpus: "0.5"                           # at most half a CPU core
+  pids_limit: 100                       # caps processes/threads: also stops fork bombs
+
+x-bank: &bank
+  <<: *hardening
+  build: ./bank                         # base image is pinned in bank/Dockerfile
+  image: twin-bank-security-lab/bank:dev           # built once, used by both instances
+  volumes:                              # hot reload; read-only inside the container
+    - ./bank/src:/app/src:ro
+    - ./bank/public:/app/public:ro
+
+services:
+  bank-vuln:
+    <<: *bank
+    environment:
+      PROFILE: vulnerable
+      INSTANCE: bank-vuln
+    ports: ["127.0.0.1:3000:3000"]      # http://bank.localhost:3000
+
+  bank-safe:
+    <<: *bank
+    environment:
+      PROFILE: hardened
+      INSTANCE: bank-safe
+      # Exact-match CORS allowlist (comma-separated origins). Only used by the hardened profile.
+      TRUSTED_ORIGINS: http://bank-safe.localhost:3001
+    ports: ["127.0.0.1:3001:3000"]      # http://bank-safe.localhost:3001
+
+  attacker:
+    <<: *hardening
+    build: ./attacker                   # base image is pinned in attacker/Dockerfile
+    image: twin-bank-security-lab/attacker:dev
+    volumes: ["./attacker/src:/app/src:ro"]
+    environment:
+      # Origins as the *browser* sees them (the attack pages run in Firefox, not in Docker).
+      VULN_ORIGIN: http://bank.localhost:3000
+      SAFE_ORIGIN: http://bank-safe.localhost:3001
+      ATTACKER_PORT: "4000"
+    ports: ["127.0.0.1:4000:4000"]      # attacker.localhost / evilbank.localhost / evil.bank.localhost
