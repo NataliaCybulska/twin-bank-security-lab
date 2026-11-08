@@ -48,4 +48,4 @@ services:
       VULN_ORIGIN: http://bank.localhost:3000
       SAFE_ORIGIN: http://bank-safe.localhost:3001
       ATTACKER_PORT: "4000"
-    ports: ["127.0.0.1:4000:4000"]      # attacker.localhost / evilbank.localhost / evil.bank.localhost
+    ports: ["127.0.0.1:4000:4000"]      # attacker / evilbank / evil.bank / evil.bank-safe .localhost

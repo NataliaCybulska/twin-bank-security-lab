@@ -7,9 +7,12 @@ import type { SecurityProfile } from './types.js';
 export const vulnerable: SecurityProfile = {
   name: 'vulnerable',
 
-  // F-01 / cookie flags: no HttpOnly (JS can read it), no SameSite attribute
-  // (Firefox then sends it on cross-site requests), no Secure.
-  sessionCookie: { name: 'sid', options: { path: '/' } },
+  // Cookie flags (root cause shared by F-01..F-04):
+  // - no HttpOnly: JavaScript (and so an XSS payload) can read it
+  // - SameSite=None: sent on cross-site requests, frames and fetches. Typically
+  //   added "to make the SSO login / embedded widget work". Chrome only accepts
+  //   SameSite=None together with Secure; http://*.localhost counts as secure.
+  sessionCookie: { name: 'sid', options: { path: '/', sameSite: 'none', secure: true } },
 
   // F-01: a CSP that a scanner reports as "present" but that does not stop XSS:
   // 'unsafe-inline' lets injected <script> run, and img-src * (allowed "for

@@ -2,8 +2,8 @@ import express from 'express';
 import { ATTACKS } from './attacks.js';
 import { loadConfig } from './config.js';
 import { isTarget, LootHub, parseReport } from './loot.js';
-import { landingPage, lootPage, stubPage } from './pages.js';
-import { PERSONA_HOSTS, type Persona } from './types.js';
+import { landingPage, lootPage, personaUrl } from './pages.js';
+import { PERSONA_HOSTS, type PageContext, type Persona } from './types.js';
 
 const { port, targets } = loadConfig();
 const loot = new LootHub();
@@ -23,18 +23,24 @@ app.use(express.json({ limit: '16kb' }));
 
 // ---- Pages ---------------------------------------------------------------
 app.get('/', (req, res) => {
-  res.type('html').send(landingPage(req.hostname, port, targets, !KNOWN_HOSTS.has(req.hostname)));
+  res.type('html').send(landingPage(req.hostname, port, targets, !KNOWN_HOSTS.has(req.hostname), ATTACKS));
 });
 
 app.get('/loot', (req, res) => {
   res.type('html').send(lootPage(req.hostname));
 });
 
-// Attack pages: stubs until implemented. Replace a stub by registering a real
-// handler for its path ABOVE this loop.
 for (const attack of ATTACKS) {
   app.get(attack.path, (req, res) => {
-    res.type('html').send(stubPage(req.hostname, attack, port));
+    const target = req.query['target'];
+    const ctx: PageContext = {
+      host: req.hostname,
+      port,
+      targets,
+      collectOrigin: personaUrl('attacker', port, ''),
+      target: isTarget(target) ? target : undefined,
+    };
+    res.type('html').send(attack.render(ctx));
   });
 }
 
@@ -62,6 +68,7 @@ app.post('/report', (req, res) => {
     res.status(400).json({ error: 'invalid report' });
     return;
   }
+  log(`  REPORT ${event.kind} from ${event.target}`);
   loot.publish(event);
   res.status(204).end();
 });

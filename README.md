@@ -28,8 +28,11 @@ docker compose up
 | http://bank-safe.localhost:3001 | Bank, **hardened** profile |
 | http://attacker.localhost:4000 | Attacker: attack list + loot panel |
 | http://evilbank.localhost:4000 | Attacker persona that passes the vulnerable CORS check |
+| http://evil.bank-safe.localhost:4000 | Attacker persona that is **same-site** with the hardened bank (CSRF token demo) |
 
 Users: `alice / alice123`, `mallory / mallory123`.
+
+Step-by-step walkthrough of every attack: [ATTACKS.md](ATTACKS.md).
 
 ## Demo browser
 
