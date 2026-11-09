@@ -101,7 +101,7 @@ Referer: http://bank.localhost:3000/board
 Sec-Fetch-Dest: empty
 Sec-Fetch-Mode: cors
 Sec-Fetch-Site: same-origin
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36
+User-Agent: [REDACTED]
 sec-ch-ua: "Not-A.Brand";v="99", "Google Chrome";v="157", "Chromium";v="157"
 sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "macOS"
@@ -123,7 +123,7 @@ Sec-Fetch-Dest: image
 Sec-Fetch-Mode: no-cors
 Sec-Fetch-Site: cross-site
 Sec-Fetch-Storage-Access: active
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36
+User-Agent: [REDACTED]
 sec-ch-ua: "Not-A.Brand";v="99", "Google Chrome";v="157", "Chromium";v="157"
 sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "macOS"

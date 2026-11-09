@@ -2,11 +2,11 @@
 
 Step-by-step guide to the four attacks in this lab. Each one is run against **both** banks:
 
-| | URL | Profile |
-|---|---|---|
-| Vulnerable bank | http://bank.localhost:3000 | `bank/src/profiles/vulnerable.ts` |
-| Hardened bank | http://bank-safe.localhost:3001 | `bank/src/profiles/hardened.ts` |
-| Attacker | http://attacker.localhost:4000 | `attacker/src/attacks.ts` |
+|                 | URL                             | Profile                           |
+| --------------- | ------------------------------- | --------------------------------- |
+| Vulnerable bank | http://bank.localhost:3000      | `bank/src/profiles/vulnerable.ts` |
+| Hardened bank   | http://bank-safe.localhost:3001 | `bank/src/profiles/hardened.ts`   |
+| Attacker        | http://attacker.localhost:4000  | `attacker/src/attacks.ts`         |
 
 ## Before you start
 
@@ -76,7 +76,7 @@ Repeat steps 3–5 on http://bank-safe.localhost:3001 with the **hardened bank**
 - The post appears as visible text (`<script>…`), not as code.
 - Nothing reaches the loot panel and alice's balance doesn't change.
 
-### What to show
+### Evidence
 
 | Where | Vulnerable | Hardened |
 |---|---|---|
@@ -109,7 +109,7 @@ Repeat steps 3–5 on http://bank-safe.localhost:3001 with the **hardened bank**
    - **Hardened bank:** `Blocked by the browser` (`TypeError: Failed to fetch`).
 5. The loot panel shows a `cors-read` entry for the vulnerable bank and a `blocked` entry for the hardened one.
 
-### What to show
+### Evidence
 
 - **DevTools → *Network*** → the `/api/account` request to the vulnerable bank:
   - *Request headers:* `Origin: http://evilbank.localhost:4000` and a `Cookie: sid=…` header.
@@ -149,7 +149,7 @@ Open http://attacker.localhost:4000/csrf. It links three scenarios, each in a ne
 | 2 | Hardened bank, from `attacker.localhost` | cross-site | **401 "Not logged in"**: `SameSite=Lax` kept the cookie back |
 | 3 | Hardened bank, from `evil.bank-safe.localhost` | **same-site** | **403 "invalid CSRF token"**: the cookie *was* sent, the token check stopped it |
 
-### What to show
+### Evidence
 
 - **DevTools → *Network*** → the `transfer` request → *Cookies* tab:
   - Scenario 1: `sid` sent.
