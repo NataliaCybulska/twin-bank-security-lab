@@ -143,11 +143,11 @@ Repeat steps 3–5 on http://bank-safe.localhost:3001 with the **hardened bank**
 
 Open http://attacker.localhost:4000/csrf. It links three scenarios, each in a new tab. Each page shows "Loading your free gift card…" and submits the form after about a second.
 
-| # | Link | Attacker's relation to the bank | Result |
-|---|---|---|---|
-| 1 | Vulnerable bank, from `attacker.localhost` | cross-site | Lands on alice's account: **"Sent €100 to mallory"** |
-| 2 | Hardened bank, from `attacker.localhost` | cross-site | **401 "Not logged in"**: `SameSite=Lax` kept the cookie back |
-| 3 | Hardened bank, from `evil.bank-safe.localhost` | **same-site** | **403 "invalid CSRF token"**: the cookie *was* sent, the token check stopped it |
+| #   | Link                                           | Attacker's relation to the bank | Result                                                                          |
+| --- | ---------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------- |
+| 1   | Vulnerable bank, from `attacker.localhost`     | cross-site                      | Lands on alice's account: **"Sent €100 to mallory"**                            |
+| 2   | Hardened bank, from `attacker.localhost`       | cross-site                      | **401 "Not logged in"**: `SameSite=Lax` kept the cookie back                    |
+| 3   | Hardened bank, from `evil.bank-safe.localhost` | **same-site**                   | **403 "invalid CSRF token"**: the cookie *was* sent, the token check stopped it |
 
 ### Evidence
 
