@@ -44,7 +44,7 @@ services:
     image: twin-bank-security-lab/attacker:dev
     volumes: ["./attacker/src:/app/src:ro"]
     environment:
-      # Origins as the *browser* sees them (the attack pages run in Firefox, not in Docker).
+      # Origins as the *browser* sees them (the attack pages run in Chrome, not in Docker).
       VULN_ORIGIN: http://bank.localhost:3000
       SAFE_ORIGIN: http://bank-safe.localhost:3001
       ATTACKER_PORT: "4000"

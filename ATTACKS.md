@@ -2,35 +2,33 @@
 
 Step-by-step guide to the four attacks in this lab. Each one is run against **both** banks:
 
-|                 | URL                             | Profile                           |
-| --------------- | ------------------------------- | --------------------------------- |
-| Vulnerable bank | http://bank.localhost:3000      | `bank/src/profiles/vulnerable.ts` |
-| Hardened bank   | http://bank-safe.localhost:3001 | `bank/src/profiles/hardened.ts`   |
-| Attacker        | http://attacker.localhost:4000  | `attacker/src/attacks.ts`         |
+| Role | URL | What |
+| --- | --- | --- |
+| Vulnerable bank | http://bank.localhost:3000 | profile `bank/src/profiles/vulnerable.ts` |
+| Hardened bank | http://bank-safe.localhost:3001 | profile `bank/src/profiles/hardened.ts` |
+| Attacker | http://attacker.localhost:4000 | attack list + loot panel (`attacker/src/attacks.ts`) |
+| Attacker (CORS) | http://evilbank.localhost:4000 | same attacker; this hostname passes the vulnerable CORS check (F-02) |
+| Attacker (same-site) | http://evil.bank-safe.localhost:4000 | same attacker; same-site with the hardened bank (F-03) |
+
+> **Instructions assume macOS.** Keyboard shortcuts below use `Cmd`; on Linux/Windows substitute `Ctrl`. The throwaway-browser command is in [SECURITY.md](SECURITY.md).
 
 ## Before you start
 
-1. **Start the lab** and keep the logs visible. Every security decision is logged:
+1. **Check safety and freshness first.** This is a dated snapshot, so read [SECURITY.md](SECURITY.md) and run `./scripts/check-updates.sh` before you build; apply updates if anything is flagged.
+
+2. **Start the lab** and keep the logs visible. Every security decision is logged:
 
    ```bash
    docker compose up
    ```
 
-2. **Open the demo browser** (a throwaway Chrome profile, separate from your everyday one):
+3. **Open the demo browser** (a separate, throwaway Chrome profile; command in [SECURITY.md](SECURITY.md)). Keep browser zoom at **100%**, clickjacking depends on pixel positions.
 
-   ```bash
-   open -na "Google Chrome" --args \
-     --user-data-dir="$HOME/.ts-security-chrome" \
-     --no-first-run --no-default-browser-check
-   ```
+4. **Log in as alice on both banks** in a normal window: `alice / alice123`.
 
-   Keep browser zoom at **100%** (clickjacking depends on pixel positions).
+5. **Open the loot panel** in its own tab: http://attacker.localhost:4000/loot
 
-3. **Log in as alice on both banks** in a normal window: `alice / alice123`.
-
-4. **Open the loot panel** in its own tab: http://attacker.localhost:4000/loot
-
-5. **Open the attack list**: http://attacker.localhost:4000
+6. **Open the attack list**: http://attacker.localhost:4000
 
 **Reset between runs.** This restores alice's €1,000 and clears the board and all sessions (log in again afterwards):
 
@@ -46,6 +44,8 @@ Restarting the containers or saving a file in `src/` also resets everything, bec
 ---
 
 ## F-01 · Stored XSS through a CSP that is "present"
+
+Deep dive with real request and response captures: [attack-flows/XSS.md](attack-flows/XSS.md).
 
 **Idea:** mallory posts a `<script>` on the community board. Whoever reads the board runs it *as themselves*: it steals their cookie and sends money to mallory.
 
@@ -95,6 +95,8 @@ Repeat steps 3–5 on http://bank-safe.localhost:3001 with the **hardened bank**
 
 ## F-02 · CORS substring check leaks the account and CSRF token
 
+Deep dive with real request and response captures: [attack-flows/CORS-misconfiguration.md](attack-flows/CORS-misconfiguration.md).
+
 **Idea:** a page on another site asks the browser to fetch alice's account *with her cookies* and reads the answer.
 
 **Root cause (vulnerable profile):** `isAllowedOrigin` uses `origin.includes('bank.localhost')`. The origin `http://evilbank.localhost:4000` contains that string, so the bank answers with `Access-Control-Allow-Origin: http://evilbank.localhost:4000` and `Access-Control-Allow-Credentials: true`, which tells the browser to let that site read the response.
@@ -135,6 +137,8 @@ Repeat steps 3–5 on http://bank-safe.localhost:3001 with the **hardened bank**
 
 ## F-03 · Cross-site request forgery
 
+Deep dive with real request and response captures: [attack-flows/CSRF.md](attack-flows/CSRF.md).
+
 **Idea:** alice just *visits* a page. A hidden form on it sends `POST /transfer` (to mallory, €100) to her bank, and the browser attaches her cookie.
 
 **Root cause (vulnerable profile):** `csrfTokenRequired: false` (the token is in the forms but never checked) plus the `SameSite=None` cookie.
@@ -165,6 +169,8 @@ Open http://attacker.localhost:4000/csrf. It links three scenarios, each in a ne
 
 ## F-04 · Clickjacking: "Claim your prize"
 
+Deep dive with real request and response captures: [attack-flows/clickjacking.md](attack-flows/clickjacking.md).
+
 **Idea:** the attacker page loads the bank's pre-filled "Confirm transfer" page (€500 to mallory) in an **invisible** frame, exactly on top of a "Claim your prize" button. Alice thinks she clicks the prize; she actually clicks **Confirm transfer**.
 
 **Root cause (vulnerable profile):** `frameProtection: false`, so no `X-Frame-Options` and no CSP `frame-ancestors`. Any site can frame the bank. With the `SameSite=None` cookie, alice is logged in inside the frame.
@@ -194,10 +200,11 @@ Open http://attacker.localhost:4000/csrf. It links three scenarios, each in a ne
 
 ## Troubleshooting
 
-| Symptom | Likely cause |
-|---|---|
-| "Not logged in" on the **vulnerable** bank inside an attack | The lab restarted (data and sessions reset). Log in as alice again. Or you're in an Incognito window, which blocks third-party cookies. |
-| XSS payload does nothing | The board was viewed by mallory (skipped on purpose) or by a logged-out user. View it as alice. |
-| Clickjacking click misses the button | Browser zoom isn't 100%. Reset with `Cmd+0`. |
-| CORS page shows `HTTP 401` for the vulnerable bank | alice isn't logged in on `bank.localhost:3000` in this browser profile. |
-| Loot panel stays empty | Reload `/loot`; it replays the last 100 events. |
+| Symptom                                                       | Likely cause                                                                                                                                                              |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Not logged in" on the **vulnerable** bank inside an attack   | The lab restarted (data and sessions reset). Log in as alice again. Or you're in an Incognito window, which blocks third-party cookies.                                   |
+| XSS payload does nothing                                      | The board was viewed by mallory (skipped on purpose) or by a logged-out user. View it as alice.                                                                           |
+| Clickjacking click misses the button                          | Browser zoom isn't 100%. Reset with `Cmd+0`.                                                                                                                              |
+| CORS page shows `HTTP 401` for the vulnerable bank            | alice isn't logged in on `bank.localhost:3000` in this browser profile.                                                                                                   |
+| Loot panel stays empty                                        | Reload `/loot`; it replays the last 100 events.                                                                                                                           |
+| `evil.bank-safe.localhost` or `evilbank.localhost` won't load | Your resolver doesn't map `*.localhost` to loopback. Chrome does this itself, so use the demo Chrome; otherwise add the names to your hosts file pointing at `127.0.0.1`. |

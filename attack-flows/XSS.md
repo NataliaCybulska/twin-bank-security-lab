@@ -147,11 +147,17 @@ Mallory watched it all from the loot panel in his Incognito window:
 
 Every cookie entry carries the same `sid`. The session never changes, so Mallory now holds six copies of a key that only needed stealing once.
 
+## Impact
+
+Stored XSS is the worst of the four, because it collapses the other three into one bug. The script runs on the bank's own origin, in the victim's session, so it can both read and act: it took Alice's cookie and made a transfer in the same breath. There's no origin to get past and no token to forge, because the code is already inside.
+
+Two losses land at once. The session cookie lets Mallory be Alice in his own browser for as long as the session lives, which here is forever. The silent transfer moves money on every page view, with the account page that would reveal it buried in the same tab Alice is reading. On a real bank this is full account takeover. And because the payload is stored rather than reflected, Mallory doesn't deliver a link to anyone: he posts once, and it fires for everyone who opens the board. A payload that reposted itself as each viewer would turn that into a worm.
+
 ## What went wrong
 
 ### 1. No output encoding
 
-This is the root cause. In the vulnerable profile `escapeHtml` returns its input untouched, so anything a user types goes into the page as HTML. The same mistake makes `/account?notice=` and `/transfer?to=` reflected XSS sinks as well. The hardened bank encodes `& < > " '` on output and the payload shows up as harmless text.
+This is the root cause. In the vulnerable profile `escapeHtml` returns its input untouched, so anything a user types goes into the page as HTML. The same mistake makes `/account?notice=` and `/transfer?to=` reflected XSS sinks as well, though both sit behind `requireSession`: they are *authenticated* reflected XSS, so the attacker needs Alice already logged in and clicking a crafted bank URL, rather than the zero-interaction stored case above. The hardened bank encodes `& < > " '` on output and the payload shows up as harmless text.
 
 ### 2. A CSP that exists but doesn't protect
 
@@ -249,8 +255,8 @@ Keep-Alive: timeout=5
 | Nonce-based CSP | Script reaches the browser but doesn't run |
 | `img-src 'self'` | Script runs but can't send the cookie out with an image |
 | `HttpOnly` | Cookie can't be read; the transfer still happens |
-| CSRF token, `SameSite`, Origin checks | Nothing. The request really is same-origin |
 | Step-up confirmation for new payees | Transfer blocked even with working XSS |
+| CSRF token, `SameSite`, Origin checks | Nothing. The request really is same-origin |
 
 ## Hardened bank
 

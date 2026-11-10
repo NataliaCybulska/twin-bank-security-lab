@@ -1,6 +1,6 @@
 # Clickjacking: a prize button that signs a transfer
 
-After a series of unfortunate events and losing a good amount of money, Alice thought that luck was finally on her side. After all, how many times could she be the victim of Mallory (spoiler: that many times as she decide to click things she shouldn't). She got a new shiny email, claiming that she won a voucher and enters a website with "Claim your prize". The button is a decoration. Sitting invisibly on top of it is the bank's real "Confirm transfer" page, and her click lands there instead. She moves €500 to Mallory and sees a party emoji for her trouble. The hardened bank refuses to be put in a frame at all. Exact steps to reproduce it are in [ATTACKS.md](../ATTACKS.md).
+After a series of unfortunate events and a good amount of lost money, Alice thought luck was finally on her side. After all, how many times could she fall victim to Mallory? (Spoiler: as many times as she keeps clicking things she shouldn't.) She gets a shiny new email claiming she won a voucher, and opens a site with a "Claim your prize" button. The button is a decoration. Sitting invisibly on top of it is the bank's real "Confirm transfer" page, and her click lands there instead. She moves €500 to Mallory and sees a party emoji for her trouble. The hardened bank refuses to be put in a frame at all. Exact steps to reproduce it are in [ATTACKS.md](../ATTACKS.md).
 
 Setup: Alice is logged in to both banks in a normal Chrome window. The prize page is on the attacker site; it loads the bank inside an invisible iframe.
 
