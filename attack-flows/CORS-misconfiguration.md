@@ -97,7 +97,7 @@ Keep-Alive: timeout=5
 
 Two lines do all the damage: `Access-Control-Allow-Origin` echoes Mallory's origin and `Access-Control-Allow-Credentials: true` lets him read a response made with Alice's cookie. `Vary: Origin` is correct, at least, so a cache won't serve this answer to someone else. The CSP header is here too, faithfully guarding a JSON document that nobody renders.
 
-![Loot panel: Alice's account data from the vulnerable bank, a blocked request from the hardened one](images/CORS-misconfiguration/loot-panel.png)
+![Loot panel: Alice's account data from the vulnerable bank, a blocked request from the hardened one](../images/CORS-misconfiguration/loot-panel.png)
 
 ### Reading the logs
 
@@ -213,7 +213,7 @@ Keep-Alive: timeout=5
 
 `401` because the `SameSite=Lax` cookie stayed home, and no `Access-Control-Allow-*` headers because `evilbank.localhost` isn't on the list. Either one alone would have been enough.
 
-![Console: CORS policy blocked the fetch; GET /api/account failed with 401](console-cors-error.png)
+![Console: CORS policy blocked the fetch; GET /api/account failed with 401](../images/CORS-misconfiguration/console-cors-error.png)
 
 DevTools can see the `401`. The page can't: Mallory's script only gets `TypeError: Failed to fetch`. Without the CORS headers the browser hides everything about the response from the page, even the status code, so the attacker can't use error messages to learn whether Alice is logged in.
 
