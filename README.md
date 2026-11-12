@@ -4,6 +4,8 @@
 
 One TypeScript bank runs twice from the same image: once with a **vulnerable** security profile and once with a **hardened** one. An attacker site fires the same attacks at both, so you can watch each security header and cookie flag do its job, or fail to.
 
+![Clickjacking demo: a slider fades a fake voucher overlay to reveal the real bank's "Confirm transfer" button underneath](images/clickjacking-demo.gif)
+
 ## Why I built this
 
 I hit a wall studying security headers and cookie flags. I made a big stack of flashcards and drilled them, and after a while it became clear what was wrong: I was memorizing the concepts, but I lacked a real understanding of the mechanisms and how they relate to each other.
