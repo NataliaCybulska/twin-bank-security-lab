@@ -438,7 +438,7 @@ CI scan completed successfully.
 
 ## Triaging the findings
 
-Eleven findings, zero blocking, and most of them are not what they look like. This is where the real work is: the scanner raises its hand, and someone has to decide which hands mean anything. Three buckets.
+Eleven findings, zero blocking, and most of them are not what they look like. This is where the real work is: the scanner raises its hand, and someone has to decide which hands mean anything. 
 
 ### False positives
 
@@ -458,7 +458,7 @@ The open redirect in `bank/src/routes.ts`. Semgrep traces `to` from `req.body` i
 
 ### Code smells, fairly flagged
 
-The manual HTML escaping in `attacker/src/pages.ts` trips the "use a sanitizer like DOMPurify" rule once per `replaceAll`, four times over. For a small attacker-side loot panel that escapes its own output it's fine, but the general advice holds: hand-rolled allowlist escaping is easy to get subtly wrong.
+The manual HTML escaping in `attacker/src/pages.ts` trips the "use a sanitizer like DOMPurify" rule once per `replaceAll`, four times over. For a small attacker-side loot panel that escapes its own output it's fine (but honestly they should know better after all of the shenanigans they did), but the general advice holds: hand-rolled allowlist escaping is easy to get subtly wrong.
 
 The log forging in `attacker/src/server.ts`: `req.query` data reaches `console.log` without stripping newlines, so an attacker could forge log entries. Low severity, real pattern.
 
@@ -476,4 +476,4 @@ So the scan flagged the defensive escaping and the attack harness, and walked pa
 
 ## Takeaway
 
-Semgrep through Docker is quick to run, and the Pro rules earn the token. On this repo it produced eleven findings and none I would change the code for as written: two false positives (a digest-pinned image it couldn't see into, and a redirect that doesn't redirect), two fair code smells in the attack tooling, and the rest working as designed. Meanwhile the vulnerabilities the lab exists to demonstrate slipped straight past, because they are missing controls rather than dangerous calls. Worth running. Its output is where triage starts.
+Semgrep through Docker is quick to run, and the Pro rules are worth looking into. On this repo it produced eleven findings and none I would change the code for as written: two false positives (a digest-pinned image it couldn't see into, and a redirect that doesn't redirect), two fair code smells in the attack tooling, and the rest working as designed. Meanwhile the vulnerabilities the lab exists to demonstrate slipped straight past, because they are missing controls rather than dangerous calls. Worth running. Its output is where triage starts.
