@@ -46,7 +46,13 @@ Trivy reports vulnerabilities in the things an image is built from, in two group
 - **OS packages (Debian).** `apt`, `bash`, `util-linux` and the rest of the Debian 13 base: 197 findings, none critical, spread across low, medium and high. This is the normal background of any Linux base image. Much of it isn't reachable in a container that only runs Node, and all of it belongs to the image maintainers to fix. It reaches you as a newer image digest, which is what the base-image bump in `check-updates.sh` is for.
 - **Node packages (`node-pkg`).** `brace-expansion`, `glob`, `ip-address` and the rest: 19 findings, none critical. They are the packages bundled inside the Node image itself, the dependency trees of `npm`, `corepack` and `yarn` that ship with `node:24-trixie-slim`. The bank and attacker apps don't use them at runtime.
 
-What's absent is this project's own dependencies (`express`, `tsx`, `@types/node`). That's on purpose: I scanned the base image, not a built app image, so the only Node packages present are the ones the base image ships with. To cover the app's dependencies you'd point Trivy at a built image (`trivy image twin-bank-security-lab/bank:dev`) or at the repo's lockfiles (`trivy fs .`, which reads `package-lock.json` directly). The `npm audit` step in `check-updates.sh` already covers that second angle.
+What's absent is this project's own dependencies (`express`, `tsx`, `@types/node`). That's on purpose: I scanned the base image, not a built app image, so the only Node packages present are the ones the base image ships with. To cover the app's dependencies you'd point Trivy at a built image (`trivy image twin-bank-security-lab/bank:dev`) or at the repo's lockfiles (`trivy fs .`, which reads `package-lock.json` directly). The `npm audit` step in `check-updates.sh` already covers that second angle. If you prefer to execute it manually:
+
+```
+docker run --rm -v "$PWD/bank:/app:ro" -w /app node:24-trixie-slim@sha256:0820eaa85e07d0490446dd01d14707e17e6108a36988cf374899cd057eb3812d npm audit
+
+found 0 vulnerabilities
+```
 
 So the 197 and the 19 are the surface of the stock Node image, not a verdict on the app.
 
