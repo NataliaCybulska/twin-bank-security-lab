@@ -1,0 +1,62 @@
+env:
+  contexts:
+    - name: bank
+      urls:
+        - ${ZAP_TARGET}
+        - ${ZAP_TARGET}/account?notice=test
+        - ${ZAP_TARGET}/transfer?to=mallory&amount=10
+      includePaths:
+        - "${ZAP_TARGET}.*"
+      excludePaths:
+        - "${ZAP_TARGET}/logout"
+        - "${ZAP_TARGET}/__reset"
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+
+  - type: spider
+    parameters:
+      context: bank
+      url: ${ZAP_TARGET}
+      maxDuration: 3
+      maxChildren: 0
+  - type: spider
+    parameters:
+      context: bank
+      url: ${ZAP_TARGET}/account?notice=test
+      maxDuration: 1
+  - type: spider
+    parameters:
+      context: bank
+      url: ${ZAP_TARGET}/transfer?to=mallory&amount=10
+      maxDuration: 1
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: activeScan
+    parameters:
+      context: bank
+      maxRuleDurationInMins: 2
+      maxScanDurationInMins: 15
+
+  - type: report
+    parameters:
+      template: traditional-md
+      reportDir: /zap/wrk
+      reportFile: zap-${ZAP_LABEL}-auth
+      reportTitle: "ZAP authenticated scan"
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: zap-${ZAP_LABEL}-auth
+      reportTitle: "ZAP authenticated scan"
