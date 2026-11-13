@@ -64,6 +64,12 @@ Each row links to a full write-up in [attack-flows/](attack-flows/), and these a
 
 For step-by-step reproduction of all four, see [ATTACKS.md](ATTACKS.md).
 
+## Scanning
+
+Alongside the hand-run attacks, I put both banks through a mix of SAST, DAST and dependency scanning, to see what automated tooling catches and what it misses. Five tools across four angles: Semgrep for static analysis, OWASP ZAP for the running app, Google's CSP Evaluator for grading the Content Security Policy, and Trivy with `npm audit` for dependencies.
+
+Each tool has its own write-up in [scanning/](scanning/), with a map of what each is good at in [scanning/README.md](scanning/README.md).
+
 ## License
 
 [MIT](LICENSE) © 2026 Natalia Cybulska. Use it, fork it, teach with it, good luck! 
