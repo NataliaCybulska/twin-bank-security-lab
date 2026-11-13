@@ -438,7 +438,7 @@ CI scan completed successfully.
 
 ## Triaging the findings
 
-Eleven findings, zero blocking, and most of them are not what they look like. This is where the real work is: the scanner raises its hand, and someone has to decide which hands mean anything. 
+Eleven findings, zero blocking, and most of them are not what they look like. This is where the real work is: the scanner raises its hand, and someone has to decide which hands mean anything. A couple turn out to be false positives; the rest are true positives that mostly don't matter here, which is its own kind of result. 
 
 ### False positives
 
@@ -456,24 +456,24 @@ v24.22.2
 
 The open redirect in `bank/src/routes.ts`. Semgrep traces `to` from `req.body` into `res.redirect(...)` and calls it an open redirect, but the redirect target is the fixed path `/account`. The line is still worth a look, for a different reason: that `notice` value is reflected back into the page, which is the authenticated reflected-XSS sink from the [XSS write-up](../attack-flows/XSS.md). Right line, wrong reason.
 
-### Code smells, fairly flagged
+### True positives
 
-The manual HTML escaping in `attacker/src/pages.ts` trips the "use a sanitizer like DOMPurify" rule once per `replaceAll`, four times over. For a small attacker-side loot panel that escapes its own output it's fine (but honestly they should know better after all of the shenanigans they did), but the general advice holds: hand-rolled allowlist escaping is easy to get subtly wrong.
+These are real matches: the pattern Semgrep flagged genuinely exists. What changes from one to the next is whether it matters, and most of them sit in `attacker/src`, the attack harness rather than the bank.
 
-The log forging in `attacker/src/server.ts`: `req.query` data reaches `console.log` without stripping newlines, so an attacker could forge log entries. Low severity, real pattern.
+The closest thing to an actual bug is the log forging in `attacker/src/server.ts`: `req.query` data reaches `console.log` without stripping newlines, so a crafted request could forge log entries. 
 
-### By design (the attacker's own tooling)
+Worth a closer look is the XSS flag, because it's the one place Semgrep says "XSS" out loud. The `unknown-value-with-script-tag` rule fires on `attacker/src/attacks.ts` (lines 65 and 111), where `columns` is rendered into the page, warning it "could be susceptible to cross-site scripting." Next to it, `req.query.target` reaching `attack.render(...)` trips the render-injection rule. Both are the attacker app building its own pages from values it controls (`target` is validated against a fixed set of attack names). Semgrep did raise XSS, just on the harness and not on the bank. 
 
-The rest sits in `attacker/src`, which is the attack harness and not the bank. The `columns` value rendered into the page, and `req.query.target` reaching `attack.render(...)`, are the attacker app building its own pages from input it validates (`target` is checked against a fixed set). Semgrep can't tell the attack tooling from production code, so it treats them the same.
+The manual HTML escaping in `attacker/src/pages.ts` rounds it out, tripping the "use a sanitizer like DOMPurify" rule once per `replaceAll`, four times over. For a small attacker-side loot panel that escapes its own output it's fine (but honestly they should know better after all of the shenanigans they did), and the general advice still holds: hand-rolled allowlist escaping is easy to get subtly wrong.
 
 ## What Semgrep missed
 
 The more useful result is what isn't in the output. The bank's deliberate vulnerabilities, the four this lab is built around, barely register. The vulnerable profile's `escapeHtml` that returns its input untouched, the `sameSite: 'none'` cookie, the `origin.includes()` CORS check, the absent `frame-ancestors`: none of them tripped a rule.
 
-They don't, because they aren't shaped like the patterns Semgrep hunts for. The stored XSS isn't a dangerous-looking call; it's the absence of escaping, a function that hands back its own argument. SAST is strong at spotting a known-bad call sitting in the code, and much weaker on a control that is simply missing or quietly misconfigured.
+They don't, because they aren't shaped like the patterns Semgrep hunts for. The stored XSS isn't a dangerous-looking call; it's the absence of escaping, a function that hands back its own argument. The one time Semgrep said "XSS" it was pointing at the attacker's own harness, not the bank's reflected sink or the stored one on the board. SAST is strong at spotting a known-bad call sitting in the code, and much weaker on a control that is simply missing or quietly misconfigured.
 
 So the scan flagged the defensive escaping and the attack harness, and walked past the planted bugs. The honest version: a quiet Semgrep run doesn't mean the app is safe, and the findings it does raise still need a person to sort the real from the noise.
 
 ## Takeaway
 
-Semgrep through Docker is quick to run, and the Pro rules are worth looking into. On this repo it produced eleven findings and none I would change the code for as written: two false positives (a digest-pinned image it couldn't see into, and a redirect that doesn't redirect), two fair code smells in the attack tooling, and the rest working as designed. Meanwhile the vulnerabilities the lab exists to demonstrate slipped straight past, because they are missing controls rather than dangerous calls. Worth running. Its output is where triage starts.
+Semgrep through Docker is quick to run, and the Pro rules are worth looking into. On this repo it produced eleven findings and none I would change the code for as written: two false positives (a digest-pinned image it couldn't see into, and a redirect that doesn't redirect), and the rest true positives that don't bite here, from a low-severity log-forging line to the attacker harness flagging its own pages. Meanwhile the vulnerabilities the lab exists to demonstrate slipped straight past, because they are missing controls rather than dangerous calls. Worth running. Its output is where triage starts.
